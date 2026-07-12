@@ -1,0 +1,91 @@
+# dependencies
+/node_modules
+/.pnp*
+.pnp.js
+
+# production
+/dist
+/build
+
+# local env files
+/.env
+/.env.*
+
+# log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs
+*.log
+
+# editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite
+/.vite
+
+# coverage
+/coverage
+
+# misc
+/.nyc_output
+/.sass-cache
+/.cache
+
+# generated files
+*.tgz
+
+test-results.xml
+
+# lockfiles if you use alternate package managers
+package-lock.json
+
+# build output in modern project proposal
+/modernization-proposal/node_modules
+/modernization-proposal/dist
+/modernization-proposal/build
+
+# optional: exclude local storybook or temp directories
+/storybook-static
+
+# ignore compiled output and IDE helper files
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# local npm package metadata
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Ignore macOS Finder metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignore generated test coverage reports
+coverage/
+
+# Ignore mount and memory directories
+/tmp
+
+# Ignore binary files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+*.gz
+
+# Ignore environment-specific overrides
+*.local
