@@ -135,7 +135,7 @@ const Navbar = () => {
             {user ? (
               <UserMenu user={user} onLogout={logout} />
             ) : (
-              <button onClick={() => login(2)} className="btn-primary text-sm py-1.5 px-3">
+              <button onClick={() => login(4)} className="btn-primary text-sm py-1.5 px-3">
                 Login
               </button>
             )}
