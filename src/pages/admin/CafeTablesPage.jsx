@@ -154,12 +154,21 @@ export const CafeTablesPage = () => {
     setShowForm(true);
   };
 
+  const getDefaultQrCodeUrl = (tableNumber) => {
+    const trimmed = tableNumber?.toString().trim();
+    if (!trimmed) return '';
+    const origin = typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://example.com';
+    return `${origin}/${encodeURIComponent(trimmed)}`;
+  };
+
   const handleEditClick = (table) => {
     setFormMode('edit');
     setFormData({
       id: table.id,
       tableNumber: table.tableNumber || '',
-      qrCodeUrl: table.qrCodeUrl || '',
+      qrCodeUrl: table.qrCodeUrl || getDefaultQrCodeUrl(table.tableNumber),
       isActive: table.isActive !== undefined ? table.isActive : true,
     });
     setFormErrors({});
@@ -168,10 +177,23 @@ export const CafeTablesPage = () => {
 
   const handleFormChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
-    }));
+    setFormData(prev => {
+      const nextData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+
+      if (name === 'tableNumber') {
+        const defaultQr = getDefaultQrCodeUrl(value);
+        const isUsingDefaultQr = !prev.qrCodeUrl || prev.qrCodeUrl === getDefaultQrCodeUrl(prev.tableNumber);
+        if (isUsingDefaultQr) {
+          nextData.qrCodeUrl = defaultQr;
+        }
+      }
+
+      return nextData;
+    });
+
     if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: '' }));
   };
 
@@ -188,7 +210,7 @@ export const CafeTablesPage = () => {
       // API expects tableNumber as string, qrCodeUrl as string, isActive as boolean
       const payload = {
         tableNumber: formData.tableNumber.toString(),
-        qrCodeUrl: formData.qrCodeUrl || `https://qr${formData.tableNumber}.example.com`,
+        qrCodeUrl: formData.qrCodeUrl || getDefaultQrCodeUrl(formData.tableNumber),
         isActive: formData.isActive
       };
       
@@ -437,6 +459,7 @@ export const CafeTablesPage = () => {
               onChange={handleFormChange}
               placeholder="https://example.com/qr/table-007"
               className={`ct-field ${formErrors.qrCodeUrl ? 'error' : ''}`}
+              disabled
             />
             {formErrors.qrCodeUrl && (
               <p style={{ fontSize: '0.75rem', color: 'rgb(239 68 68)', marginTop: '4px' }}>

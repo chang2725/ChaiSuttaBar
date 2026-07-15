@@ -168,7 +168,7 @@ const UsersPage = () => {
   const [roleUpdateLoading, setRoleUpdateLoading] = useState(false);
 
   // Available roles
-  const availableRoles = ['Cook', 'Server', 'Cashier', 'Admin'];
+  const availableRoles = ['Cook', 'Server', 'Cashier', 'Admin', "User"];
 
   // ─── Toast management ─────────────────────────────────────────────────────
   const showToast = (message, type = 'info') => {
