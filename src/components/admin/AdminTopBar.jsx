@@ -57,11 +57,14 @@ export const AdminTopBar = ({ sidebarOpen, onToggleSidebar, isMobile }) => {
             </div>
           </div>
         )}
+        <button onClick={() => (window.location.href = '/')} className="px-3 py-2 md:px-4 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors touch-manipulation">
+          Home Page
+        </button>
         <button
           onClick={handleLogout}
           className="px-3 py-2 md:px-4 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors touch-manipulation"
         >
-          {isMobile ? 'Exit' : 'Logout'}
+          {isMobile ? 'Logout' : 'Logout'}
         </button>
       </div>
     </header>
