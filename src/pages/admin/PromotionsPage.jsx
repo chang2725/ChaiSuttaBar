@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { ToastContainer } from '../../components/admin/shared/Toast';
 import { usersApi, promotionsApi } from '../../services/apiService';
 
@@ -13,11 +15,14 @@ const STYLE = `
   .promotions-btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
   .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 12px; border: 1px solid rgb(226 232 240); border-radius: 8px; }
   .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: rgb(15 23 42); }
+  .ql-container { font-family: 'Inter', sans-serif; font-size: 1rem; min-height: 200px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+  .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; border-color: rgb(226 232 240); }
 `;
 
 const PromotionsPage = () => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [sendToAll, setSendToAll] = useState(true);
@@ -70,19 +75,28 @@ const PromotionsPage = () => {
 
     try {
       setLoading(true);
-      const payload = {
-        subject,
-        message,
-        isAllUsers: sendToAll,
-        userIds: sendToAll ? [] : selectedUsers
-      };
+      const formData = new FormData();
+      formData.append('subject', subject);
+      formData.append('message', message);
+      formData.append('isAllUsers', sendToAll);
 
-      await promotionsApi.send(payload);
+      if (!sendToAll) {
+        selectedUsers.forEach(id => {
+          formData.append('userIds', id);
+        });
+      }
+
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      await promotionsApi.send(formData);
       showToast('Promotion sent successfully!', 'success');
       
       // Reset form
       setSubject('');
       setMessage('');
+      setImageFile(null);
       setSelectedUsers([]);
       setSendToAll(true);
     } catch (error) {
@@ -120,14 +134,37 @@ const PromotionsPage = () => {
 
             <div>
               <label className="promotions-label">Message (Offer Details)</label>
-              <textarea 
-                className="promotions-field" 
-                rows="6" 
-                placeholder="Write your promotional message here..."
+              <ReactQuill 
+                theme="snow"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={setMessage}
+                readOnly={loading}
+                placeholder="Write your beautiful promotional message here..."
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    ['link', 'clean']
+                  ],
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="promotions-label">Promotional Image (Optional)</label>
+              <input 
+                type="file" 
+                accept="image/*"
+                className="promotions-field"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setImageFile(e.target.files[0]);
+                  }
+                }}
                 disabled={loading}
               />
+              <p className="text-xs text-slate-500 mt-2">This image will be attached directly into the email body.</p>
             </div>
 
             <div>

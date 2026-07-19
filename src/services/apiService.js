@@ -1036,11 +1036,11 @@ export const businessDashboardApi = {
 
 // Promotions API
 export const promotionsApi = {
-  send: async (promotionData) => {
+  send: async (formData) => {
     try {
-      const response = await apiCall(API_ENDPOINTS.PROMOTIONS, {
+      const response = await apiCallFormData(API_ENDPOINTS.PROMOTIONS, {
         method: 'POST',
-        body: JSON.stringify(promotionData),
+        body: formData,
       });
       return response;
     } catch (error) {
