@@ -620,7 +620,8 @@ export const InventoryPage = () => {
                 value={transactionFormData.unit}
                 onChange={handleTransactionFormChange}
                 placeholder="kg, pieces, etc."
-                readOnly
+                readOnly={!!(transactionFormData.ingredientId && inventoryItems.some(i => i.ingredient_id === parseInt(transactionFormData.ingredientId)))}
+                style={!!(transactionFormData.ingredientId && inventoryItems.some(i => i.ingredient_id === parseInt(transactionFormData.ingredientId))) ? { backgroundColor: 'rgb(249 250 251)', color: 'rgb(107 114 128)' } : {}}
               />
               {transactionFormErrors.unit && <div style={{ color: 'rgb(239 68 68)', fontSize: '0.75rem', marginTop: '4px' }}>{transactionFormErrors.unit}</div>}
             </div>
@@ -661,8 +662,8 @@ export const InventoryPage = () => {
                 value={transactionFormData.minThreshold}
                 onChange={handleTransactionFormChange}
                 placeholder="Auto-filled"
-                readOnly
-                style={{ backgroundColor: 'rgb(249 250 251)', color: 'rgb(107 114 128)' }}
+                readOnly={!!(transactionFormData.ingredientId && inventoryItems.some(i => i.ingredient_id === parseInt(transactionFormData.ingredientId)))}
+                style={!!(transactionFormData.ingredientId && inventoryItems.some(i => i.ingredient_id === parseInt(transactionFormData.ingredientId))) ? { backgroundColor: 'rgb(249 250 251)', color: 'rgb(107 114 128)' } : {}}
               />
               {transactionFormErrors.minThreshold && <div style={{ color: 'rgb(239 68 68)', fontSize: '0.75rem', marginTop: '4px' }}>{transactionFormErrors.minThreshold}</div>}
             </div>
