@@ -77,7 +77,13 @@ export const printReceipt = (order, tablesMap = {}) => {
         <div class="info">
           <div class="info-row">
             <span>Order No: #${order.orderNumber}</span>
-            <span>${new Date(order.createdAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'})}</span>
+            <span>${(() => {
+              const dateVal = order.createdAt || order.created_at || new Date();
+              const safeDate = typeof dateVal === 'string' ? new Date(dateVal.replace(' ', 'T')) : new Date(dateVal);
+              return isNaN(safeDate.getTime()) 
+                ? new Date().toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'})
+                : safeDate.toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit'});
+            })()}</span>
           </div>
           <div class="info-row">
             <span>Type: ${order.deliveryMode || 'Dine In'}</span>
