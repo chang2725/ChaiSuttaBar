@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { isAuthenticated, cafeTablesApi } from '../services/apiService';
+import { printReceipt } from '../utils/printReceipt';
 
 /* ─── Design Tokens ─── */
 const t = {
@@ -291,24 +292,47 @@ const OrderItemsModal = ({ order, onClose, tablesMap }) => {
               {order.paymentStatus && <PaymentBadge status={order.paymentStatus} />}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: t.surfaceAlt,
-              border: `1px solid ${t.border}`,
-              borderRadius: '8px',
-              width: '32px', height: '32px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-              color: t.textMuted,
-              fontSize: '20px', lineHeight: 1,
-              fontFamily: 'inherit',
-              flexShrink: 0,
-              transition: 'all 0.15s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#B91C1C'; e.currentTarget.style.borderColor = '#EF444430'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = t.surfaceAlt; e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.border; }}
-          >×</button>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            <button
+              onClick={() => printReceipt(order, tablesMap)}
+              title="Print Bill"
+              style={{
+                background: t.surfaceAlt,
+                border: `1px solid ${t.border}`,
+                borderRadius: '8px',
+                padding: '0 12px',
+                height: '32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                cursor: 'pointer',
+                color: t.text,
+                fontSize: '12px', fontWeight: 600,
+                fontFamily: 'inherit',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = t.accentLight; e.currentTarget.style.color = t.accentDark; e.currentTarget.style.borderColor = t.accent; }}
+              onMouseLeave={e => { e.currentTarget.style.background = t.surfaceAlt; e.currentTarget.style.color = t.text; e.currentTarget.style.borderColor = t.border; }}
+            >
+              <span style={{ fontSize: '14px' }}>🖨️</span> Print
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: t.surfaceAlt,
+                border: `1px solid ${t.border}`,
+                borderRadius: '8px',
+                width: '32px', height: '32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+                color: t.textMuted,
+                fontSize: '20px', lineHeight: 1,
+                fontFamily: 'inherit',
+                flexShrink: 0,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#B91C1C'; e.currentTarget.style.borderColor = '#EF444430'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = t.surfaceAlt; e.currentTarget.style.color = t.textMuted; e.currentTarget.style.borderColor = t.border; }}
+            >×</button>
+          </div>
         </div>
 
         <StatusStepper status={order.status} />
