@@ -36,7 +36,7 @@ export const printReceipt = (order, tablesMap = {}) => {
       <head>
         <title>Receipt - Order #${order.orderNumber}</title>
         <style>
-          @page { margin: 0; size: 80mm auto; }
+          @page { margin: 0; }
           body { 
             font-family: 'Courier New', Courier, monospace; 
             margin: 0; 
