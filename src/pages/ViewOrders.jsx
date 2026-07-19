@@ -214,7 +214,7 @@ const StatusStepper = ({ status }) => {
 };
 
 /* ─── OrderItemsModal ─── */
-const OrderItemsModal = ({ order, onClose, tablesMap }) => {
+const OrderItemsModal = ({ order, onClose, tablesMap, userRole }) => {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -293,27 +293,34 @@ const OrderItemsModal = ({ order, onClose, tablesMap }) => {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-            <button
-              onClick={() => printReceipt(order, tablesMap)}
-              title="Print Bill"
-              style={{
-                background: t.surfaceAlt,
-                border: `1px solid ${t.border}`,
-                borderRadius: '8px',
-                padding: '0 12px',
-                height: '32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                cursor: 'pointer',
-                color: t.text,
-                fontSize: '12px', fontWeight: 600,
-                fontFamily: 'inherit',
-                transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = t.accentLight; e.currentTarget.style.color = t.accentDark; e.currentTarget.style.borderColor = t.accent; }}
-              onMouseLeave={e => { e.currentTarget.style.background = t.surfaceAlt; e.currentTarget.style.color = t.text; e.currentTarget.style.borderColor = t.border; }}
-            >
-              <span style={{ fontSize: '14px' }}>🖨️</span> Print
-            </button>
+            {['admin', 'cashier'].includes((userRole || '').toLowerCase()) && (
+              <button
+                onClick={() => printReceipt(order, tablesMap)}
+                title="Print Bill"
+                style={{
+                  background: t.surfaceAlt,
+                  border: `1px solid ${t.border}`,
+                  borderRadius: '8px',
+                  padding: '0 12px',
+                  height: '32px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  cursor: 'pointer',
+                  color: t.text,
+                  fontSize: '12px', fontWeight: 600,
+                  fontFamily: 'inherit',
+                  transition: 'all 0.15s',
+                }}
+                onMouseOver={e => { e.currentTarget.style.background = t.hover; e.currentTarget.style.borderColor = t.borderLight; }}
+                onMouseOut={e => { e.currentTarget.style.background = t.surfaceAlt; e.currentTarget.style.borderColor = t.border; }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Print
+              </button>
+            )}
             <button
               onClick={onClose}
               style={{
@@ -1141,7 +1148,7 @@ const ViewOrders = () => {
         )}
       </div>
       {selectedOrder && (
-        <OrderItemsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} tablesMap={tablesMap} />
+        <OrderItemsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} tablesMap={tablesMap} userRole={userRole} />
       )}
     </div>
   );
