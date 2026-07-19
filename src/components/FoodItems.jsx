@@ -554,7 +554,7 @@ const FoodItems = () => {
           </div>
           <div className="fi-error-actions">
             {isAuthError ? (
-              <button className="fi-login" onClick={() => login()}>Log in</button>
+              <button className="fi-login" onClick={() => login(4)}>Log in</button>
             ) : null}
             <button className="fi-retry" onClick={fetchData}>Try again</button>
           </div>

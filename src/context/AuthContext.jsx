@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
 
   // Step 1: Save current path in sessionStorage → redirect to ASP.NET backend → backend redirects to Auth0
   //         Pass this UI's callback URL so the shared backend knows where to redirect after Auth0 login
-  const login = (tenantId = 2) => {
+  const login = (tenantId = 4) => {
     sessionStorage.setItem('auth_redirect', window.location.pathname);
     const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
     window.location.href = `https://menu-card-api-yvzycdnaqq-el.a.run.app/api/auth/login/${tenantId}?returnUrl=${returnUrl}`;
