@@ -22,6 +22,7 @@ import CafeTablesPage from './pages/admin/CafeTablesPage'
 import InventoryPage from './pages/admin/InventoryPage'
 import UsersPage from './pages/admin/UsersPage'
 import BusinessDashboardPage from './pages/admin/BusinessDashboardPage'
+import PromotionsPage from './pages/admin/PromotionsPage'
 import './App.css'
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
                             {/* User management routes */}
                             <Route path="users" element={<UsersPage />} />
                             <Route path="dashboard" element={<BusinessDashboardPage />} />
+                            <Route path="promotions" element={<PromotionsPage />} />
                             <Route path="" element={<IngredientsPage />} />
                           </Routes>
                         </AdminLayout>

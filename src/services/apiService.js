@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
   UPDATE_ROLE: `${API_BASE_URL}/auth/UpdateRole`,
   // Business analytics
   BUSINESS_DASHBOARD: `${API_BASE_URL}/operations/business-dashboard`,
+  PROMOTIONS: `${API_BASE_URL}/operations/send-promotions`,
   // Add more endpoints here as needed
 };
 
@@ -1033,6 +1034,22 @@ export const businessDashboardApi = {
   },
 };
 
+// Promotions API
+export const promotionsApi = {
+  send: async (promotionData) => {
+    try {
+      const response = await apiCall(API_ENDPOINTS.PROMOTIONS, {
+        method: 'POST',
+        body: JSON.stringify(promotionData),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error sending promotion:', error);
+      throw error;
+    }
+  },
+};
+
 export default {
   foodItemsApi,
   categoriesApi,
@@ -1056,4 +1073,5 @@ export default {
   inventoryApi,
   inventoryTransactionsApi,
   businessDashboardApi,
+  promotionsApi,
 };

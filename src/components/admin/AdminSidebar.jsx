@@ -63,6 +63,11 @@ export const AdminSidebar = ({ isOpen, isMobile, onClose }) => {
       path: '/admin/users',
       icon: '👥',
     },
+    {
+      label: 'Promotions',
+      path: '/admin/promotions',
+      icon: '🎁',
+    },
   ];
 
   const isActive = (path) => location.pathname === path;
