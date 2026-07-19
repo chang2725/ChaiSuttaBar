@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrderManagement } from '../hooks/useOrderManagement';
-import { isAuthenticated } from '../services/apiService';
+import { isAuthenticated, cafeTablesApi } from '../services/apiService';
 
 /* ─── Design Tokens ─── */
 const t = {
@@ -213,7 +213,7 @@ const StatusStepper = ({ status }) => {
 };
 
 /* ─── OrderItemsModal ─── */
-const OrderItemsModal = ({ order, onClose }) => {
+const OrderItemsModal = ({ order, onClose, tablesMap }) => {
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', onKey);
@@ -280,7 +280,13 @@ const OrderItemsModal = ({ order, onClose }) => {
                 background: t.surfaceAlt, border: `1px solid ${t.borderLight}`,
               }}>
                 {deliveryIcon(order.deliveryMode)} {deliveryLabel(order.deliveryMode)}
-                {order.tableId > 0 && ` · T${order.tableId}`}
+                {order.tableId > 0 && ` · ${
+                  tablesMap[order.tableId] 
+                    ? (tablesMap[order.tableId].toString().startsWith('T') 
+                        ? tablesMap[order.tableId] 
+                        : `T${tablesMap[order.tableId]}`)
+                    : `T${order.tableId}`
+                }`}
               </span>
               {order.paymentStatus && <PaymentBadge status={order.paymentStatus} />}
             </div>
@@ -422,7 +428,7 @@ const OrderItemsModal = ({ order, onClose }) => {
 };
 
 /* ─── OrderCard ─── */
-const OrderCard = ({ order, showActions, userRole, onStatusUpdate, onCardClick, loading, wsConnected, manualReconnect, animDelay = 0 }) => {
+const OrderCard = ({ order, showActions, userRole, onStatusUpdate, onCardClick, loading, wsConnected, manualReconnect, animDelay = 0, tablesMap }) => {
   const [showWaitInput, setShowWaitInput] = useState(false);
   const [waitVal, setWaitVal] = useState(order.avgWaitTime || '');
   const cfg = STATUS[order.status] || STATUS.pending;
@@ -509,7 +515,13 @@ const OrderCard = ({ order, showActions, userRole, onStatusUpdate, onCardClick, 
                   background: t.surfaceAlt, border: `1px solid ${t.borderLight}`,
                 }}>
                   {deliveryIcon(order.deliveryMode)} {deliveryLabel(order.deliveryMode)}
-                  {order.tableId > 0 && ` · T${order.tableId}`}
+                  {order.tableId > 0 && ` · ${
+                    tablesMap[order.tableId] 
+                      ? (tablesMap[order.tableId].toString().startsWith('T') 
+                          ? tablesMap[order.tableId] 
+                          : `T${tablesMap[order.tableId]}`)
+                      : `T${order.tableId}`
+                  }`}
                 </span>
                 {order.avgWaitTime && (
                   <span style={{
@@ -811,10 +823,24 @@ const ViewOrders = () => {
 
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [tablesMap, setTablesMap] = useState({});
 
   useEffect(() => {
     if (!isAuthenticated()) { navigate('/'); return; }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+    cafeTablesApi.getAll()
+      .then(tables => {
+        const map = {};
+        tables.forEach(t => {
+          map[t.id] = t.tableNumber;
+        });
+        setTablesMap(map);
+      })
+      .catch(err => console.error('Error fetching tables:', err));
+  }, []);
 
   useEffect(() => {
     setActiveTab(isUserAdmin ? 'pending' : 'myOrders');
@@ -1065,6 +1091,7 @@ const ViewOrders = () => {
                 wsConnected={wsConnected}
                 manualReconnect={manualReconnect}
                 animDelay={i * 35}
+                tablesMap={tablesMap}
               />
             ))
           )}
@@ -1090,7 +1117,7 @@ const ViewOrders = () => {
         )}
       </div>
       {selectedOrder && (
-        <OrderItemsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+        <OrderItemsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} tablesMap={tablesMap} />
       )}
     </div>
   );
