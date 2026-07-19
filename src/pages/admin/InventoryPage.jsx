@@ -297,10 +297,10 @@ export const InventoryPage = () => {
         quantityChange: parseFloat(transactionFormData.quantityChange),
         notes: transactionFormData.notes || '',
         createdBy: parseInt(transactionFormData.createdBy),
-        cost: parseFloat(transactionFormData.cost) || 0,
+        cost: transactionFormData.cost !== '' ? parseFloat(transactionFormData.cost) : 0,
         unit: transactionFormData.unit,
-        minThreshold: parseFloat(transactionFormData.minThreshold) || null,
-        costPerUnit: parseFloat(transactionFormData.costPerUnit) || null,
+        minThreshold: transactionFormData.minThreshold !== '' ? parseFloat(transactionFormData.minThreshold) : null,
+        costPerUnit: transactionFormData.costPerUnit !== '' ? parseFloat(transactionFormData.costPerUnit) : null,
       };
       
       await inventoryTransactionsApi.create(payload);
@@ -538,8 +538,14 @@ export const InventoryPage = () => {
       </div>
 
       {/* Transaction Form Modal */}
-      <FormModal
-        isOpen={showTransactionForm}
+      {(() => {
+        const isExistingIngredient = transactionFormData.ingredientId 
+          ? inventoryItems.some(item => item.ingredient_id === parseInt(transactionFormData.ingredientId))
+          : false;
+
+        return (
+          <FormModal
+            isOpen={showTransactionForm}
         title="Add Inventory Transaction"
         submitLabel="Create Transaction"
         onSubmit={handleTransactionFormSubmit}
@@ -619,7 +625,8 @@ export const InventoryPage = () => {
                 name="unit"
                 value={transactionFormData.unit}
                 onChange={handleTransactionFormChange}
-                placeholder="kg, pieces, etc."
+                placeholder={isExistingIngredient ? "Auto-filled" : "kg, pieces, etc."}
+                readOnly={isExistingIngredient}
               />
               {transactionFormErrors.unit && <div style={{ color: 'rgb(239 68 68)', fontSize: '0.75rem', marginTop: '4px' }}>{transactionFormErrors.unit}</div>}
             </div>
@@ -659,7 +666,8 @@ export const InventoryPage = () => {
                 step="0.001"
                 value={transactionFormData.minThreshold}
                 onChange={handleTransactionFormChange}
-                placeholder="Auto-filled"
+                placeholder={isExistingIngredient ? "Auto-filled" : "Enter min threshold"}
+                readOnly={isExistingIngredient}
               />
               {transactionFormErrors.minThreshold && <div style={{ color: 'rgb(239 68 68)', fontSize: '0.75rem', marginTop: '4px' }}>{transactionFormErrors.minThreshold}</div>}
             </div>
@@ -708,8 +716,9 @@ export const InventoryPage = () => {
             </div>
           </div>
         </div>
-      </FormModal>
-
+          </FormModal>
+        );
+      })()}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
