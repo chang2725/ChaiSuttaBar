@@ -170,8 +170,8 @@ export const CashFlowPage = () => {
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
-    category: '',
-    type: 'income',
+    category: 'General Expense',
+    type: 'expense',
     date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
     referenceId: '',
     createdBy: user?.id || '', // Auto-populate with current user ID
@@ -206,16 +206,29 @@ export const CashFlowPage = () => {
     try {
       setCategoriesLoading(true);
       const categoriesData = await cashFlowApi.getCategories();
-      setCategories(categoriesData);
+      if (!categoriesData || categoriesData.length === 0) {
+        setCategories([
+          { id: 'fallback-1', name: 'General Income', type: 'income' },
+          { id: 'fallback-2', name: 'General Expense', type: 'expense' },
+          { id: 'fallback-3', name: 'Salary', type: 'expense' },
+          { id: 'fallback-4', name: 'Rent', type: 'expense' },
+          { id: 'fallback-5', name: 'Utilities', type: 'expense' },
+          { id: 'fallback-6', name: 'Office Supplies', type: 'expense' },
+        ]);
+      } else {
+        setCategories(categoriesData);
+      }
     } catch (error) {
       console.error('Failed to fetch cash flow categories:', error);
       showToast('Failed to load categories. Using default options.', 'error');
       // Set fallback categories if API fails
       setCategories([
-        { id: 'fallback-1', name: 'Salary', type: 'income' },
-        { id: 'fallback-2', name: 'Rent', type: 'expense' },
-        { id: 'fallback-3', name: 'Utilities', type: 'expense' },
-        { id: 'fallback-4', name: 'Office Supplies', type: 'expense' },
+        { id: 'fallback-1', name: 'General Income', type: 'income' },
+        { id: 'fallback-2', name: 'General Expense', type: 'expense' },
+        { id: 'fallback-3', name: 'Salary', type: 'expense' },
+        { id: 'fallback-4', name: 'Rent', type: 'expense' },
+        { id: 'fallback-5', name: 'Utilities', type: 'expense' },
+        { id: 'fallback-6', name: 'Office Supplies', type: 'expense' },
       ]);
     } finally {
       setCategoriesLoading(false);
@@ -235,8 +248,8 @@ export const CashFlowPage = () => {
     setFormData({ 
       description: '', 
       amount: '', 
-      category: '', 
-      type: 'income',
+      category: 'General Expense', 
+      type: 'expense',
       date: new Date().toISOString().split('T')[0],
       referenceId: '',
       createdBy: user?.id || '' // Auto-populate with current user ID
