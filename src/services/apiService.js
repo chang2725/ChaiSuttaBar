@@ -1,12 +1,12 @@
 // API configuration and service functions
-const API_BASE_URL = 'https://menu-card-api-yvzycdnaqq-el.a.run.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // const API_BASE_URL = 'http://localhost:8080/api';
 // API endpoints
 export const API_ENDPOINTS = {
   FOOD_ITEMS: `${API_BASE_URL}/menu/food_items`,
   CATEGORIES: `${API_BASE_URL}/menu/categories`,
   ORDERS: `${API_BASE_URL}/order`,
-  WEBSOCKET: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//menu-card-api-yvzycdnaqq-el.a.run.app/api/websocket/orders`,
+  WEBSOCKET: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${import.meta.env.VITE_WEBSOCKET_URL}`,
   // Operations endpoints
   CASH_FLOW_CATEGORIES: `${API_BASE_URL}/operations/cash-flow-categories`,
   CASH_FLOW: `${API_BASE_URL}/operations/cash-flow`,
@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   // Auth endpoints
   USERS: `${API_BASE_URL}/auth/getusers`,
   UPDATE_ROLE: `${API_BASE_URL}/auth/UpdateRole`,
+  GET_TENANT_ID: `${API_BASE_URL}/auth/GetTenantId`,
   // Business analytics
   BUSINESS_DASHBOARD: `${API_BASE_URL}/operations/business-dashboard`,
   PROMOTIONS: `${API_BASE_URL}/operations/send-promotions`,
@@ -85,8 +86,10 @@ const apiCall = async (url, options = {}) => {
 // Food Items API functions
 export const foodItemsApi = {
   // Get all food items
+  //console.log(API_ENDPOINTS.FOOD_ITEMS);
   getAll: async () => {
     try {
+      console.log(API_ENDPOINTS.FOOD_ITEMS);
       const response = await apiCall(API_ENDPOINTS.FOOD_ITEMS, {
         method: 'GET',
       });
@@ -498,6 +501,85 @@ export const guestLogin = async ({ email, password }) => {
   if (user) localStorage.setItem('user', JSON.stringify(user));
 
   return token;
+};
+
+/**
+ * Fetch tenant ID for the current domain
+ * Calls POST /auth/GetTenantId
+ */
+export const getTenantId = async (domain = null) => {
+  try {
+    const domainName = domain || (window.location.origin.endsWith('/')
+      ? window.location.origin
+      : `${window.location.origin}/`);
+
+    const response = await fetch(API_ENDPOINTS.GET_TENANT_ID, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ domainName }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.tenantId ?? data.id;
+  } catch (error) {
+    console.error('Error fetching tenant ID:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch restaurant details from /auth/GetTenantId (details field)
+ * Converts the JS object literal string from API into a JavaScript object.
+ */
+export const getRestaurantData = async (domain = null, icons = {}) => {
+  try {
+    const domainName = domain || (window.location.origin.endsWith('/')
+      ? window.location.origin
+      : `${window.location.origin}/`);
+
+    const response = await fetch(API_ENDPOINTS.GET_TENANT_ID, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({ domainName }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.details) return null;
+
+    let detailsStr = data.details.trim();
+    if (detailsStr.startsWith('"') && detailsStr.endsWith('"')) {
+      try {
+        detailsStr = JSON.parse(detailsStr);
+      } catch (e) {
+        // ignore if parse fails
+      }
+    }
+    // Fix any broken escaped single quotes in JSON string literal (e.g. I"ve -> I've)
+    detailsStr = detailsStr.replace(/(\w)"(\w)/g, "$1'$2");
+
+    const { Leaf, ChefHat, Wallet, Users, Truck, Heart } = icons;
+    const fn = new Function('Leaf', 'ChefHat', 'Wallet', 'Users', 'Truck', 'Heart', `return (${detailsStr});`);
+    return fn(Leaf, ChefHat, Wallet, Users, Truck, Heart);
+  } catch (error) {
+    console.error('Error fetching/parsing restaurant details:', error);
+    throw error;
+  }
 };
 
 // Helper function to check if user has admin role

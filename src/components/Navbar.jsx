@@ -82,7 +82,7 @@ const UserMenu = ({ user, onLogout }) => {
 
 const Navbar = () => {
   const location = useLocation();
-  const { user, login, logout } = useAuth();
+  const { user, login, logout, tenantId } = useAuth();
   const { itemCount } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -163,7 +163,7 @@ const Navbar = () => {
                 {user ? (
                   <UserMenu user={user} onLogout={logout} />
                 ) : (
-                  <button onClick={() => login(4)} className="btn-animated px-8 py-2.5 text-sm uppercase tracking-wider">
+                  <button onClick={() => login(tenantId)} className="btn-animated px-8 py-2.5 text-sm uppercase tracking-wider">
                     Login
                   </button>
                 )}
@@ -177,7 +177,7 @@ const Navbar = () => {
               {user ? (
                 <UserMenu user={user} onLogout={logout} />
               ) : (
-                <button onClick={() => login(4)} className="btn-animated px-5 py-2 text-xs uppercase tracking-wider">
+                <button onClick={() => login(tenantId)} className="btn-animated px-5 py-2 text-xs uppercase tracking-wider">
                   Login
                 </button>
               )}

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { setAuthLogoutCallback } from '../services/apiService';
+import { setAuthLogoutCallback, getTenantId } from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -28,6 +28,22 @@ const isTokenExpired = (token) => {
 
 export const AuthProvider = ({ children }) => {
   const logoutRef = useRef(null); // Use ref to avoid dependency cycles
+
+  const [tenantId, setTenantId] = useState(null);
+
+  useEffect(() => {
+    const fetchTenantId = async () => {
+      try {
+        const id = await getTenantId();
+        if (id) {
+          setTenantId(id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch tenant ID:', error);
+      }
+    };
+    fetchTenantId();
+  }, []);
 
   const [user, setUser] = useState(() => {
     try {
@@ -63,10 +79,19 @@ export const AuthProvider = ({ children }) => {
 
   // Step 1: Save current path in sessionStorage → redirect to ASP.NET backend → backend redirects to Auth0
   //         Pass this UI's callback URL so the shared backend knows where to redirect after Auth0 login
-  const login = (tenantId = 4) => {
-    sessionStorage.setItem('auth_redirect', window.location.pathname);
-    const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
-    window.location.href = `https://menu-card-api-yvzycdnaqq-el.a.run.app/api/auth/login/${tenantId}?returnUrl=${returnUrl}`;
+  const login = async (paramTenantId = null) => {
+    try {
+      let idToUse = paramTenantId || tenantId;
+      if (!idToUse) {
+        idToUse = await getTenantId();
+      }
+      sessionStorage.setItem('auth_redirect', window.location.pathname);
+      const returnUrl = encodeURIComponent(`${window.location.origin}/auth/callback`);
+      window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/login/${idToUse}?returnUrl=${returnUrl}`;
+      console.log(import.meta.env.VITE_API_BASE_URL);
+    } catch (error) {
+      console.error('Error during login redirect:', error);
+    }
   };
 
   // Step 2: Called by AuthCallback page after backend redirects back with token + user in query params
@@ -125,7 +150,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, handleCallback, getRedirectPath, forceLogout: () => logoutRef.current?.(true) }}>
+    <AuthContext.Provider value={{ user, token, tenantId, login, logout, handleCallback, getRedirectPath, forceLogout: () => logoutRef.current?.(true) }}>
       {children}
     </AuthContext.Provider>
   );

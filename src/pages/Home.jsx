@@ -151,7 +151,7 @@ const Home = () => {
   const { tableNumber } = useParams();
   const navigate = useNavigate();
   const { setTableId, setDeliveryMode } = useCart();
-  const { login, user } = useAuth();
+  const { login, user, tenantId } = useAuth();
 
   // Table-scan flow state
   const [phase, setPhase] = useState('idle'); // idle | checking | login | fetching | success | error
@@ -313,7 +313,7 @@ const Home = () => {
           <button
             onClick={() => {
               sessionStorage.setItem('pending_table_scan', tableNumber);
-              login(4);
+              login(tenantId);
             }}
             className="btn-primary"
           >
