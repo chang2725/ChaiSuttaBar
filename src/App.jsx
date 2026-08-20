@@ -12,6 +12,7 @@ import Contact from './pages/Contact'
 import AuthCallback from './pages/AuthCallback'
 import Checkout from './pages/Checkout'
 import ViewOrders from './pages/ViewOrders'
+import Profile from './pages/Profile'
 import IngredientsPage from './pages/admin/IngredientsPage'
 import AllergensPage from './pages/admin/AllergensPage'
 import CategoriesPage from './pages/admin/CategoriesPage'
@@ -23,6 +24,7 @@ import InventoryPage from './pages/admin/InventoryPage'
 import UsersPage from './pages/admin/UsersPage'
 import BusinessDashboardPage from './pages/admin/BusinessDashboardPage'
 import PromotionsPage from './pages/admin/PromotionsPage'
+import UpdateAboutPage from './pages/admin/UpdateAboutPage'
 import './App.css'
 
 function App() {
@@ -46,6 +48,7 @@ function App() {
                           <Route path="/contact" element={<Contact />} />
                           <Route path="/checkout" element={<Checkout />} />
                           <Route path="/orders" element={<ViewOrders />} />
+                          <Route path="/profile" element={<Profile />} />
                           <Route path="/auth/callback" element={<AuthCallback />} />
                           <Route path="/:tableNumber" element={<Home />} />
                         </Routes>
@@ -72,6 +75,7 @@ function App() {
                             <Route path="users" element={<UsersPage />} />
                             <Route path="dashboard" element={<BusinessDashboardPage />} />
                             <Route path="promotions" element={<PromotionsPage />} />
+                            <Route path="update-about" element={<UpdateAboutPage />} />
                             <Route path="" element={<IngredientsPage />} />
                           </Routes>
                         </AdminLayout>

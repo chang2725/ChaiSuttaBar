@@ -544,20 +544,21 @@ export default function About() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [stamps, setStamps] = useState(4); // Interactive Loyalty Stamps
 
-  const testimonials = restaurant.about.testimonials;
+  const testimonials = restaurant?.about?.testimonials || defaultRestaurant.about.testimonials;
 
   // Auto-slide Testimonials
   useEffect(() => {
+    if (!testimonials || testimonials.length === 0) return;
     const id = setInterval(() => {
       setTestimonialIdx((i) => (i + 1) % testimonials.length);
     }, 6000);
     return () => clearInterval(id);
-  }, [testimonials.length]);
+  }, [testimonials?.length]);
 
   const today = useMemo(() => DAY_KEYS[new Date().getDay()], []);
-  const socialLinks = Object.entries(restaurant.contact.socialMedia).filter(([, v]) => v);
+  const socialLinks = restaurant?.contact?.socialMedia ? Object.entries(restaurant.contact.socialMedia).filter(([, v]) => v) : [];
   const socialIcons = { instagram: FaInstagram, facebook: FaFacebook, youtube: FaYoutube, twitter: FaTwitter, linkedin: FaLinkedin };
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${restaurant.contact.location.latitude},${restaurant.contact.location.longitude}`;
+  const mapsUrl = restaurant?.contact?.location ? `https://www.google.com/maps/search/?api=1&query=${restaurant.contact.location.latitude},${restaurant.contact.location.longitude}` : "#";
 
   const copyCoupon = (code) => {
     navigator.clipboard.writeText(code);
@@ -572,9 +573,10 @@ export default function About() {
   };
 
   const filteredMenuItems = useMemo(() => {
+    if (!restaurant.menuHighlights) return [];
     if (selectedCategory === "All") return restaurant.menuHighlights;
     return restaurant.menuHighlights.filter((i) => i.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [restaurant.menuHighlights, selectedCategory]);
 
   return (
     <div className="chang-about relative min-h-screen pb-20 sm:pb-0 selection:bg-[#E0A96D] selection:text-[#0F2922]">
@@ -765,19 +767,25 @@ color: #FFFF;
 
         {/* WHY CHOOSE US CARDS */}
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {restaurant.about.whyChooseUs.map(({ text, icon: Icon, desc }, idx) => (
-            <AnimatedSection key={text} delay={idx * 50}>
-              <div className="bg-white p-5 rounded-2xl border border-[#1D2B26]/10 flex items-start gap-4 hover:border-[#E0A96D] transition-colors shadow-sm">
-                <div className="p-2.5 rounded-xl bg-[#0F2922] text-[#E0A96D] shrink-0">
-                  <Icon size={20} />
+          {(restaurant.about?.whyChooseUs || defaultRestaurant.about.whyChooseUs).map((item, idx) => {
+            const defaultIcons = [Leaf, ChefHat, Wallet, Users, Truck, Heart];
+            const Icon = (typeof item.icon === 'function' || (typeof item.icon === 'object' && item.icon && item.icon.$$typeof))
+              ? item.icon
+              : (defaultIcons[idx % defaultIcons.length] || Leaf);
+            return (
+              <AnimatedSection key={item.text || idx} delay={idx * 50}>
+                <div className="bg-white p-5 rounded-2xl border border-[#1D2B26]/10 flex items-start gap-4 hover:border-[#E0A96D] transition-colors shadow-sm">
+                  <div className="p-2.5 rounded-xl bg-[#0F2922] text-[#E0A96D] shrink-0">
+                    <Icon size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-[#1D2B26]">{item.text}</h4>
+                    <p className="text-xs text-[#5B5A4E] mt-1">{item.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-[#1D2B26]">{text}</h4>
-                  <p className="text-xs text-[#5B5A4E] mt-1">{desc}</p>
-                </div>
-              </div>
-            </AnimatedSection>
-          ))}
+              </AnimatedSection>
+            );
+          })}
         </div>
       </section>
 
@@ -994,7 +1002,7 @@ color: #FFFF;
             </p>
             <div className="flex gap-2 pt-2">
               {socialLinks.map(([key, url]) => {
-                const Icon = socialIcons[key];
+                const Icon = socialIcons[key] || ExternalLink;
                 return (
                   <a
                     key={key}

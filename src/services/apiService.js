@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const API_ENDPOINTS = {
   FOOD_ITEMS: `${API_BASE_URL}/menu/food_items`,
   CATEGORIES: `${API_BASE_URL}/menu/categories`,
+  RATINGS: `${API_BASE_URL}/menu/ratings`,
   ORDERS: `${API_BASE_URL}/order`,
   WEBSOCKET: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${import.meta.env.VITE_WEBSOCKET_URL}`,
   // Operations endpoints
@@ -17,6 +18,8 @@ export const API_ENDPOINTS = {
   USERS: `${API_BASE_URL}/auth/getusers`,
   UPDATE_ROLE: `${API_BASE_URL}/auth/UpdateRole`,
   GET_TENANT_ID: `${API_BASE_URL}/auth/GetTenantId`,
+  UPDATE_TENANT_ID: `${API_BASE_URL}/auth/UpdateTenantId`,
+  PROFILE: `${API_BASE_URL}/auth/profile`,
   // Business analytics
   BUSINESS_DASHBOARD: `${API_BASE_URL}/operations/business-dashboard`,
   PROMOTIONS: `${API_BASE_URL}/operations/send-promotions`,
@@ -115,6 +118,16 @@ export const foodItemsApi = {
       throw error;
     }
   },
+
+  // Submit rating for a food item
+  submitRating: async (foodItemId, rating, review = '') => {
+    return ratingsApi.submitRating({ foodItemId, rating, review });
+  },
+
+  // Get ratings and reviews for a food item
+  getRatings: async (foodItemId) => {
+    return ratingsApi.getByFoodItemId(foodItemId);
+  },
 };
 
 // Categories API functions
@@ -147,6 +160,50 @@ export const categoriesApi = {
       throw error;
     }
   },
+};
+
+// Ratings API functions
+export const ratingsApi = {
+  // Get ratings & reviews for a food item (GET /api/menu/ratings/:foodItemId)
+  getByFoodItemId: async (foodItemId) => {
+    try {
+      const response = await apiCall(`${API_ENDPOINTS.RATINGS}/${foodItemId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/plain, application/json',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching ratings for food item ${foodItemId}:`, error);
+      throw error;
+    }
+  },
+
+  // Submit rating for a food item (POST /api/menu/ratings)
+  // Payload: { foodItemId: number, rating: number, review: string }
+  submitRating: async ({ foodItemId, rating, review = '' }) => {
+    try {
+      const response = await apiCall(API_ENDPOINTS.RATINGS, {
+        method: 'POST',
+        headers: {
+          'Accept': 'text/plain, application/json',
+        },
+        body: JSON.stringify({
+          foodItemId,
+          rating,
+          review,
+        }),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      throw error;
+    }
+  },
+
+  // Alias for submitRating
+  addRating: async (data) => ratingsApi.submitRating(data),
 };
 
 // Transform nested order response { order, user, items } into a flat structure
@@ -570,12 +627,28 @@ export const getRestaurantData = async (domain = null, icons = {}) => {
         // ignore if parse fails
       }
     }
-    // Fix any broken escaped single quotes in JSON string literal (e.g. I"ve -> I've)
-    detailsStr = detailsStr.replace(/(\w)"(\w)/g, "$1'$2");
 
     const { Leaf, ChefHat, Wallet, Users, Truck, Heart } = icons;
-    const fn = new Function('Leaf', 'ChefHat', 'Wallet', 'Users', 'Truck', 'Heart', `return (${detailsStr});`);
-    return fn(Leaf, ChefHat, Wallet, Users, Truck, Heart);
+    let res = null;
+    try {
+      const sanitized = detailsStr.replace(/(\w)"(\w)/g, "$1'$2");
+      const fn = new Function('Leaf', 'ChefHat', 'Wallet', 'Users', 'Truck', 'Heart', `return (${sanitized});`);
+      res = fn(Leaf, ChefHat, Wallet, Users, Truck, Heart);
+    } catch {
+      res = JSON.parse(detailsStr);
+    }
+
+    if (res && res.about && Array.isArray(res.about.whyChooseUs)) {
+      const defaultIcons = [Leaf, ChefHat, Wallet, Users, Truck, Heart];
+      res.about.whyChooseUs = res.about.whyChooseUs.map((item, idx) => ({
+        ...item,
+        icon: (typeof item.icon === 'function' || (typeof item.icon === 'object' && item.icon && item.icon.$$typeof))
+          ? item.icon
+          : defaultIcons[idx % defaultIcons.length],
+      }));
+    }
+
+    return res;
   } catch (error) {
     console.error('Error fetching/parsing restaurant details:', error);
     throw error;
@@ -1132,9 +1205,73 @@ export const promotionsApi = {
   },
 };
 
+// Profile API
+export const profileApi = {
+  getProfile: async () => {
+    try {
+      const response = await apiCall(API_ENDPOINTS.PROFILE, {
+        method: 'GET',
+      });
+      return response;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  },
+};
+
+// Tenant Details API
+export const tenantApi = {
+  getTenantDetails: async (domainName = null) => {
+    try {
+      const domain = domainName || (window.location.origin.endsWith('/') ? window.location.origin : `${window.location.origin}/`);
+      const response = await fetch(API_ENDPOINTS.GET_TENANT_ID, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ domainName: domain }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching tenant details:', error);
+      throw error;
+    }
+  },
+
+  updateTenantDetails: async (detailsData, domainName = null) => {
+    try {
+      const domain = domainName || (window.location.origin.endsWith('/') ? window.location.origin : `${window.location.origin}/`);
+      const detailsStr = typeof detailsData === 'string' ? detailsData : JSON.stringify(detailsData);
+
+      const response = await apiCall(API_ENDPOINTS.UPDATE_TENANT_ID, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          domainName: domain,
+          details: detailsStr,
+        }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Error updating tenant details:', error);
+      throw error;
+    }
+  },
+};
+
 export default {
   foodItemsApi,
   categoriesApi,
+  ratingsApi,
   ordersApi,
   OrderWebSocketClient,
   transformFoodItem,
@@ -1156,4 +1293,6 @@ export default {
   inventoryTransactionsApi,
   businessDashboardApi,
   promotionsApi,
+  profileApi,
+  tenantApi,
 };

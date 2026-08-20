@@ -473,44 +473,44 @@ const css = `
 
 /* ── Sort config ── */
 const SORT_OPTIONS = [
-  { value: 'name',   label: 'Name',   desc: 'A to Z alphabetically',  icon: '🔤' },
-  { value: 'price',  label: 'Price',  desc: 'Lowest price first',      icon: '💰' },
-  { value: 'rating', label: 'Rating', desc: 'Highest rated first',     icon: '⭐' },
+  { value: 'name', label: 'Name', desc: 'A to Z alphabetically', icon: '🔤' },
+  { value: 'price', label: 'Price', desc: 'Lowest price first', icon: '💰' },
+  { value: 'rating', label: 'Rating', desc: 'Highest rated first', icon: '⭐' },
 ];
 
 /* ── Filter config ── */
 const FILTER_CHIPS = [
-  { key: 'vegan',         label: '🌱 Vegan'       },
-  { key: 'glutenFree',    label: '🌾 Gluten-Free' },
-  { key: 'availableOnly', label: '✅ Available'   },
+  { key: 'vegan', label: '🌱 Vegan' },
+  { key: 'glutenFree', label: '🌾 Gluten-Free' },
+  { key: 'availableOnly', label: '✅ Available' },
 ];
 
 const FoodItems = () => {
   const { token, login, tenantId } = useAuth();
   const { itemCount, finalAmount } = useCart();
   const navigate = useNavigate();
-  
-  const [foodItems,   setFoodItems]   = useState([]);
-  const [categories,  setCategories]  = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [error,       setError]       = useState(null);
-  const [query,       setQuery]       = useState('');
-  const [filters,     setFilters]     = useState({ 
-    vegan: false, 
-    glutenFree: false, 
+
+  const [foodItems, setFoodItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState({
+    vegan: false,
+    glutenFree: false,
     availableOnly: true,
     category: null
   });
-  const [sortBy,      setSortBy]      = useState('name');
-  const [showSort,    setShowSort]    = useState(false);
-  
+  const [sortBy, setSortBy] = useState('name');
+  const [showSort, setShowSort] = useState(false);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const searchRef = useRef(null);
 
-  useEffect(() => { 
-    fetchData(); 
+  useEffect(() => {
+    fetchData();
   }, [token]);
 
   // Reset page when filters, query, or sorting changes
@@ -521,12 +521,12 @@ const FoodItems = () => {
   const fetchData = async () => {
     try {
       setLoading(true); setError(null);
-      
+
       const [apiData, categoriesData] = await Promise.all([
         foodItemsApi.getAll(),
         categoriesApi.getAll()
       ]);
-      
+
       setFoodItems(apiData.map(transformFoodItem));
       setCategories(categoriesData.map(transformCategory).filter(cat => cat.isActive));
     } catch (err) {
@@ -539,14 +539,14 @@ const FoodItems = () => {
   const filteredAndSortedItems = foodItems
     .filter(item => {
       if (query && !item.name?.toLowerCase().includes(query.toLowerCase())) return false;
-      if (filters.vegan         && !item.isVegan)     return false;
-      if (filters.glutenFree    && !item.isGlutenFree) return false;
-      if (filters.availableOnly && !item.isAvailable)  return false;
+      if (filters.vegan && !item.isVegan) return false;
+      if (filters.glutenFree && !item.isGlutenFree) return false;
+      if (filters.availableOnly && !item.isAvailable) return false;
       if (filters.category && !item.categories.includes(filters.category)) return false;
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === 'price')  return (a.price || 0) - (b.price || 0);
+      if (sortBy === 'price') return (a.price || 0) - (b.price || 0);
       if (sortBy === 'rating') return (b.averageRating || 0) - (a.averageRating || 0);
       return (a.name || '').localeCompare(b.name || '');
     });
@@ -560,9 +560,9 @@ const FoodItems = () => {
 
   const toggleFilter = key => setFilters(prev => ({ ...prev, [key]: !prev[key] }));
   const toggleCategory = categoryName => {
-    setFilters(prev => ({ 
-      ...prev, 
-      category: prev.category === categoryName ? null : categoryName 
+    setFilters(prev => ({
+      ...prev,
+      category: prev.category === categoryName ? null : categoryName
     }));
   };
   const clearAll = () => {
@@ -589,7 +589,7 @@ const FoodItems = () => {
           </div>
         </div>
         <div className="fi-skeleton-grid">
-          {[1,2,3,4,5,6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map(i => (
             <div className="fi-skel" key={i} style={{ animationDelay: `${i * 0.12}s` }}>
               <div className="fi-skel-img" />
               <div className="fi-skel-body">
@@ -686,7 +686,7 @@ const FoodItems = () => {
                 {label}
               </button>
             ))}
-            
+
             {categories.map((category) => (
               <button
                 key={category.id}
@@ -729,9 +729,9 @@ const FoodItems = () => {
             </div>
           ) : (
             paginatedItems.map((item, index) => (
-              <FoodItemCard 
-                key={item.id || index} 
-                item={item} 
+              <FoodItemCard
+                key={item.id || index}
+                item={item}
               />
             ))
           )}
@@ -740,9 +740,9 @@ const FoodItems = () => {
         {/* ── Pagination Controls ── */}
         {totalPages > 1 && (
           <div className="fi-pagination">
-            <button 
-              className="fi-page-btn" 
-              disabled={currentPage === 1} 
+            <button
+              className="fi-page-btn"
+              disabled={currentPage === 1}
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             >
               ← Prev
@@ -750,9 +750,9 @@ const FoodItems = () => {
             <span className="fi-page-info">
               Page <b>{currentPage}</b> of <b>{totalPages}</b>
             </span>
-            <button 
-              className="fi-page-btn" 
-              disabled={currentPage === totalPages} 
+            <button
+              className="fi-page-btn"
+              disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             >
               Next →

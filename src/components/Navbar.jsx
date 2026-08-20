@@ -61,6 +61,13 @@ const UserMenu = ({ user, onLogout }) => {
           </div>
           <div className="py-1">
             <Link
+              to="/profile"
+              onClick={() => setOpen(false)}
+              className="block w-full text-left px-5 py-2.5 text-sm text-[#FAF6F0]/80 hover:bg-[#E0A96D]/10 hover:text-[#E0A96D] transition-colors font-medium"
+            >
+              My Profile
+            </Link>
+            <Link
               to="/orders"
               onClick={() => setOpen(false)}
               className="block w-full text-left px-5 py-2.5 text-sm text-[#FAF6F0]/80 hover:bg-[#E0A96D]/10 hover:text-[#E0A96D] transition-colors font-medium"
